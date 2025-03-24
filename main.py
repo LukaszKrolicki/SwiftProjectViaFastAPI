@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from config import engine, Base
 from database import get_db
+from models.swift_code import SwiftCode
 from routes.swift_code_routes import router
 from services.swift_code_load_service import load_swift_codes_from_csv
 from config import csv_file_path
@@ -11,7 +12,8 @@ from config import csv_file_path
 async def lifespan(app: FastAPI):
     db = next(get_db())
 
-    load_swift_codes_from_csv(db, csv_file_path)
+    if not db.query(SwiftCode).first():
+        load_swift_codes_from_csv(db, csv_file_path)
     yield
 app = FastAPI(lifespan=lifespan)
 
